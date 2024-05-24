@@ -9,6 +9,12 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -31,6 +37,46 @@ public class TelaTimeThread extends JDialog{
     
     private JButton botaoStart=new JButton("Start");
     private JButton botaoStop=new JButton("Stop");
+    
+    
+    // Criando Objeto para Thread
+    private Runnable thread1=new Runnable() {
+        @Override
+        public void run() {
+           // percorrer infinitamente a data e a hora no campo (atualizar a cada segundo a hora)
+           while(true){ // fica sempre rodando
+               mostraTempo.setText(new SimpleDateFormat("dd/MM/yyyy hh:mm:s").
+                       format(Calendar.getInstance().getTime()));
+               
+               try {
+                   Thread.sleep(1000);// dar pausa de 1 segundo, pois o while é mega rápido e corre risco de travar o computador
+               } catch (InterruptedException ex) {
+                   Logger.getLogger(TelaTimeThread.class.getName()).log(Level.SEVERE, null, ex);
+               }
+           }
+        }
+    };
+    
+    //************************* Thread 2 Campo 2 **********************************************
+     private Runnable thread2=new Runnable() {
+        @Override
+        public void run() {
+           // percorrer infinitamente a data e a hora no campo (atualizar a cada segundo a hora)
+           while(true){ // fica sempre rodando
+               mostraTempo2.setText(new SimpleDateFormat("dd-MM-yyyy hh:mm:s").
+                       format(Calendar.getInstance().getTime()));
+               
+               try {
+                   Thread.sleep(1000);// dar pausa de 1 segundo, pois o while é mega rápido e corre risco de travar o computador
+               } catch (InterruptedException ex) {
+                   Logger.getLogger(TelaTimeThread.class.getName()).log(Level.SEVERE, null, ex);
+               }
+           }
+        }
+    };
+    
+    private Thread threadTime;
+    private Thread threadTime2;
     
     public TelaTimeThread(){
         setTitle("Minha tela para Threads");
@@ -72,7 +118,36 @@ public class TelaTimeThread extends JDialog{
        botaoStop.setPreferredSize(new Dimension(92,25));
        bagConstraints.gridx++;
        jPanel.add(botaoStop,bagConstraints);
-               
+              
+       //********************** Adicionando o Evento no botão ************************************
+       botaoStart.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) { // executa o clique no botão
+                threadTime=new Thread(thread1);
+                threadTime.start();
+                
+                threadTime2=new Thread(thread2);
+                threadTime2.start();
+                
+                botaoStart.setEnabled(false);
+                botaoStop.setEnabled(true);
+            }
+       });
+       
+       botaoStop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              threadTime.stop();
+              threadTime2.stop();
+              
+               botaoStart.setEnabled(true);
+                botaoStop.setEnabled(false);
+            }
+       });
+       
+       // Ao abrir a telinha botão stopr desabilitado
+       botaoStop.setEnabled(false);
+       
         add(jPanel,BorderLayout.WEST);
         // sempre será o último comando
         setVisible(true); // torna a tela visivel para usuário
